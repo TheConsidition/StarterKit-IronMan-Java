@@ -58,12 +58,12 @@ public class Api {
 
         ApiResponse response = _gson.fromJson(received.toString(), ApiResponse.class);
         if (!handleApiResponse(response)) {
-            return null;
+            return response;
         }
 
         if (con.getResponseCode() >= 400) {
             log(con.getResponseCode() + ": " + con.getResponseMessage());
-            return null;
+            return response;
         }
 
         return response;
@@ -179,12 +179,15 @@ public class Api {
     }
 
     public static GameState getGame(String gameId) {
-    	log("Getting game: " + gameId);
-        ApiResponse response = get("games/" + gameId + "/" + _apiKey);
-        if (response == null) {
-            System.exit(1);
-        }
-        return ((GameStateApiResponse)response).gameState;
+    	ApiResponse response;
+    	do {
+    		log("Getting game: " + gameId);
+    		response= get("games/" + gameId + "/" + _apiKey);
+	        if (response == null) {
+	            System.exit(1);
+	        }
+        } while (!response.success);
+    	return ((GameStateApiResponse)response).gameState;
     }
 
     public static GameState joinGame(String gameId) {
@@ -235,6 +238,9 @@ public class Api {
         if (response == null) {
             System.exit(1);
         }
+        if (!response.success) {
+        	return getGame(gameId);
+        }
         return ((GameStateApiResponse)response).gameState;
     }
 
@@ -246,6 +252,9 @@ public class Api {
         if (response == null) {
             System.exit(1);
         }
+        if (!response.success) {
+        	return getGame(gameId);
+        }
         return ((GameStateApiResponse)response).gameState;
     }
 
@@ -255,6 +264,9 @@ public class Api {
         ApiResponse response = post("games/" + gameId + "/action/rest", data);
         if (response == null) {
             System.exit(1);
+        }
+        if (!response.success) {
+        	return getGame(gameId);
         }
         return ((GameStateApiResponse)response).gameState;
     }
@@ -267,8 +279,12 @@ public class Api {
         if (response == null) {
             System.exit(1);
         }
-        return ((GameStateApiResponse)response).gameState;
+        if (!response.success) {
+        	return getGame(gameId);
+        }
+    	return ((GameStateApiResponse)response).gameState;
     }
+    
     
     public static GameState dropPowerup(String gameId, String powerupName) {
     	log("Attempting to drop powerup: " + powerupName);
@@ -277,6 +293,9 @@ public class Api {
         ApiResponse response = post("games/" + gameId + "/action/droppowerup", data);
         if (response == null) {
             System.exit(1);
+        }
+        if (!response.success) {
+        	return getGame(gameId);
         }
         return ((GameStateApiResponse)response).gameState;
     }
