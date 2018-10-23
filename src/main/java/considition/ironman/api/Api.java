@@ -216,13 +216,7 @@ public class Api {
         	log("Trying to ready up!");
             JsonObject data = new JsonObject();
             ApiResponse response = post("games/" + gameId + "/ready", data);
-            if (response == null) {
-                try {
-                    Thread.sleep(3000);
-                }
-                catch (InterruptedException ex) {
-
-                }
+            if (!response.success) {                
                 continue;
             }
             return ((GameStateApiResponse)response).gameState;
